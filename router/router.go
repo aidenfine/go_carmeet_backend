@@ -6,6 +6,7 @@ import (
 
 	"github.com/aidenfine/go_carmeet_backend/middleware"
 	auth_service "github.com/aidenfine/go_carmeet_backend/services/auth"
+	meets_service "github.com/aidenfine/go_carmeet_backend/services/meets"
 	user_routes "github.com/aidenfine/go_carmeet_backend/services/user"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
@@ -32,7 +33,8 @@ func registerPublicRoutes(r *mux.Router, db *sqlx.DB) {
 }
 
 func registerProtectedRoutes(r *mux.Router, db *sqlx.DB) {
-	protectedRouter := r.PathPrefix("/v1").Subrouter()
+	protectedRouter := r.PathPrefix("").Subrouter()
 	protectedRouter.Use(middleware.JWTMiddleware)
 	user_routes.RegisterUserRoutes(protectedRouter, db)
+	meets_service.RegisterMeetsRoutes(r, db)
 }

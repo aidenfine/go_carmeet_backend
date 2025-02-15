@@ -17,7 +17,6 @@ import (
 
 func LoginUser(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
 	var user user_types.UserLoginPayload
-	// Parse JSON payload
 	if err := utils.ParseJSON(r, &user); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return

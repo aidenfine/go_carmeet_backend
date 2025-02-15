@@ -10,8 +10,8 @@ import (
 func RegisterUserRoutes(r *mux.Router, db *sqlx.DB) {
 	userRouter := r.PathPrefix("/v1/users").Subrouter()
 
-	userRouter.HandleFunc("/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		// get user by id
+	userRouter.HandleFunc("/{id}", func(w http.ResponseWriter, r *http.Request) {
+		GetUserByID(w, r, db)
 	}).Methods("GET")
 
 }
