@@ -1,5 +1,5 @@
 def main():
-    print("Hello from recommendation!")
+    print("Hello from ds-models!")
 
 
 if __name__ == "__main__":
