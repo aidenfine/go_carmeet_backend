@@ -8,6 +8,7 @@ import (
 
 	"github.com/aidenfine/go_carmeet_backend/auth"
 	"github.com/aidenfine/go_carmeet_backend/config"
+	auth_utils "github.com/aidenfine/go_carmeet_backend/services/auth/utils"
 	user_types "github.com/aidenfine/go_carmeet_backend/services/user/types"
 	"github.com/aidenfine/go_carmeet_backend/utils"
 	"github.com/go-playground/validator"
@@ -56,6 +57,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
 	var newUser user_types.User
 	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+	if auth_utils.IsEmailRegistered(newUser.Email, db) {
+		http.Error(w, "User already exits with this email", http.StatusConflict)
 		return
 	}
 
