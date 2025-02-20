@@ -18,6 +18,10 @@ func RegisterAuthRoutes(r *mux.Router, db *sqlx.DB) {
 	authRouter.HandleFunc("/create-user", func(w http.ResponseWriter, r *http.Request) {
 		CreateUser(w, r, db)
 	}).Methods("POST")
+	authRouter.HandleFunc("/verify", func(w http.ResponseWriter, r *http.Request) {
+		VerifyJWTToken(w, r, db)
+
+	}).Methods("GET")
 
 	authRouter.HandleFunc("/refresh", auth.RefreshToken).Methods("POST")
 }

@@ -50,7 +50,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    token,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+	})
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "Login successful"})
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
@@ -88,4 +96,24 @@ func CreateUser(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+func VerifyJWTToken(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
+	cookie, err := r.Cookie("jwt")
+	if err != nil {
+		http.Error(w, "unauhorized", http.StatusUnauthorized)
+		return
+	}
+	email, err := auth.VerifyAccessToken(cookie.Value)
+	if err != nil {
+		http.Error(w, "unauhorized", http.StatusUnauthorized)
+		return
+	}
+	response := user_types.Response{
+		Message: email + " Verified",
+		Status:  "OK",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+
 }
