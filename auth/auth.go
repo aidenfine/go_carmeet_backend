@@ -135,10 +135,10 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func generateAccessToken(email string) string {
+func generateAccessToken(userId string) string {
 	claims := jwt.MapClaims{
-		"sub": email,
-		"exp": time.Now().Add(time.Hour * 1).Unix(),
+		"userId":    userId,
+		"expiredAt": time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	secret := []byte(config.Envs.JWTSecret)
@@ -147,12 +147,16 @@ func generateAccessToken(email string) string {
 
 	return tokenString
 }
+
+// func isTokenExpired(expiredAt float64) bool {
+
+// 	return float64(time.Now().Unix()) > expiredAt
+// }
+
 func VerifyAccessToken(tokenString string) (string, error) {
 	secret := []byte(config.Envs.JWTSecret)
 
-	// Parse and validate the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -163,32 +167,27 @@ func VerifyAccessToken(tokenString string) (string, error) {
 		return "", fmt.Errorf("invalid token: %w", err)
 	}
 
-	if !token.Valid {
-		return "", fmt.Errorf("invalid token")
-	}
-
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		return "", fmt.Errorf("invalid token claims")
 	}
 
-	exp, ok := claims["exp"].(float64)
+	// expiredAt, ok := claims["expiredAt"].(float64)
+	// if !ok {
+	// 	return "", fmt.Errorf("invalid expiration claim")
+	// }
+
+	// if isTokenExpired(expiredAt) {
+	// 	return "", fmt.Errorf("token expired")
+	// }
+
+	userId, ok := claims["userId"].(string)
 	if !ok {
-		return "", fmt.Errorf("invalid expiration claim")
+		return "", fmt.Errorf("invalid userId claim")
 	}
 
-	if float64(time.Now().Unix()) > exp {
-		return "", fmt.Errorf("token expired")
-	}
-
-	email, ok := claims["sub"].(string)
-	if !ok {
-		return "", fmt.Errorf("invalid subject claim")
-	}
-
-	return email, nil
+	return userId, nil
 }
-
 func generateRefreshToken(email string) string {
 	claims := jwt.MapClaims{
 		"sub": email,

@@ -8,6 +8,7 @@ import (
 
 	"github.com/aidenfine/go_carmeet_backend/auth"
 	"github.com/aidenfine/go_carmeet_backend/config"
+	auth_types "github.com/aidenfine/go_carmeet_backend/services/auth/types"
 	auth_utils "github.com/aidenfine/go_carmeet_backend/services/auth/utils"
 	user_types "github.com/aidenfine/go_carmeet_backend/services/user/types"
 	"github.com/aidenfine/go_carmeet_backend/utils"
@@ -99,18 +100,22 @@ func CreateUser(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
 }
 func VerifyJWTToken(w http.ResponseWriter, r *http.Request, db *sqlx.DB) {
 	cookie, err := r.Cookie("jwt")
+	log.Printf(cookie.Value, "COOKIE VALUE")
 	if err != nil {
+		log.Println("erro", err)
 		http.Error(w, "unauhorized", http.StatusUnauthorized)
 		return
 	}
-	email, err := auth.VerifyAccessToken(cookie.Value)
+	user_id, err := auth.VerifyAccessToken(cookie.Value)
 	if err != nil {
+		log.Println("failed to verify", err)
 		http.Error(w, "unauhorized", http.StatusUnauthorized)
 		return
 	}
-	response := user_types.Response{
-		Message: email + " Verified",
+	response := auth_types.Response{
+		Message: "Verified",
 		Status:  "OK",
+		UserId:  user_id,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
